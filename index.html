@@ -4,107 +4,113 @@
 <meta property="og:image" content="vrtokyotrains.png">
 <script src="https://aframe.io/releases/0.9.2/aframe.min.js"></script>
 <script src="https://rawgit.com/andreasplesch/aframe-meshline-component/master/dist/aframe-meshline-component.min.js"></script>
-<script>
-AFRAME.registerComponent('test', {
-	init: async function() {
-		const scene = document.querySelector('a-scene')
-
-		const tx = function(pos) {
-			const ratio = 20
-			const offx = -139.767698 // tokyo st.
-			const offy = -35.681
-			const res = [(pos[0] + offx) * ratio, (pos[1] + offy) * ratio]
-			return res
-		}
-
-		// from https://github.com/nagix/mini-tokyo-3d by nagix
-		//const geojson = "https://nagix.github.io/mini-tokyo-3d/data/features.json"  // 3534 geojson 路線図 7.4MB
-		const geojson = "features-zoom13.json" // 1.2MB
-		const features = (await loadJSON(geojson)).features
-		console.log(features)
-		const Y = -.2
-
-		const zoom = 14 // 13-18
-		let limit = 10000
-		const drawstation = true
-		const drawline = true
-		const addMeshLine = function(pos, col) {
-				// https://github.com/andreasplesch/aframe-meshline-component
-				let s = []
-				for (const p of pos) {
-					const sp = tx(p)
-					s.push(sp[0] + " " + Y + " " + sp[1])
+<script>"use strict"
+		AFRAME.registerComponent('test', {
+			init: async function() {
+				const scene = document.querySelector('a-scene')
+		
+				const tx = function(pos) {
+					const ratio = 20
+					const offx = -139.767698 // tokyo st.
+					const offy = -35.681
+					const res = [(pos[0] + offx) * ratio, (pos[1] + offy) * ratio]
+					return res
 				}
-				let line = document.createElement('a-entity')
-				line.setAttribute('meshline', { path: s.join(','), color: col, lineWidth: 2 })
-				scene.appendChild(line)
-		}
-		for (const f of features) {
-			console.log(f.properties.id, f.geometry.type, f.properties.zoom)
-			if (f.properties.zoom != zoom)
-				continue
-			if (f.geometry.type == 'LineString') {
-				if (!drawline)
-					continue
-				const pos = f.geometry.coordinates
-				const col = f.properties.color
-//				console.log(f.properties.id)
-				
-				addMeshLine(pos, col)
-				limit--
-			} else if (f.geometry.type == 'Polygon') {
-				if (!drawstation)
-					continue
-				const ppos = f.geometry.coordinates
-				const col = f.properties.color
-//				console.log(f.properties.id)
-				for (const pos of ppos) {
-					addMeshLine(pos, col)
+		
+				// from https://github.com/nagix/mini-tokyo-3d by nagix
+				//const geojson = "https://nagix.github.io/mini-tokyo-3d/data/features.json"  // 3534 geojson 路線図 7.4MB
+				const geojson = "features-zoom13.json" // 1.2MB
+				const features = (await loadJSON(geojson)).features
+				console.log(features)
+				const Y = -.2
+		
+				const zoom = 14 // 13-18
+				let limit = 10000
+				const drawstation = true
+				const drawline = true
+				const addMeshLine = function(pos, col) {
+						// https://github.com/andreasplesch/aframe-meshline-component
+						let s = []
+						for (const p of pos) {
+							const sp = tx(p)
+							s.push(sp[0] + " " + Y + " " + sp[1])
+						}
+						let line = document.createElement('a-entity')
+						line.setAttribute('meshline', { path: s.join(','), color: col, lineWidth: 2 })
+						scene.appendChild(line)
 				}
-				limit--
+				for (const f of features) {
+					console.log(f.properties.id, f.geometry.type, f.properties.zoom)
+					if (f.properties.zoom != zoom)
+						continue
+					if (f.geometry.type == 'LineString') {
+						if (!drawline)
+							continue
+						const pos = f.geometry.coordinates
+						const col = f.properties.color
+		//				console.log(f.properties.id)
+						
+						addMeshLine(pos, col)
+						limit--
+					} else if (f.geometry.type == 'Polygon') {
+						if (!drawstation)
+							continue
+						const ppos = f.geometry.coordinates
+						const col = f.properties.color
+		//				console.log(f.properties.id)
+						for (const pos of ppos) {
+							addMeshLine(pos, col)
+						}
+						limit--
+					}
+					if (!limit)
+						break
+				}
+			},
+			tick: function () {
+		//		console.log(this.el.object3D.position, this.el.object3D.rotation);
 			}
-			if (!limit)
-				break
-		}
-	},
-  tick: function () {
-//		console.log(this.el.object3D.position, this.el.object3D.rotation);
-  }
-})
-function loadJSON(url) {
-	return new Promise(function(resolve, reject) {
-		var request = new XMLHttpRequest()
-		request.open('GET', url)
-		request.onreadystatechange = function() {
-			if (request.readyState === 4) {
-				if (request.status === 200) {
-					resolve(JSON.parse(request.response))
-				} else {
-					reject(Error(request.statusText))
-				}
+		})
+		AFRAME.registerComponent('cursor-listener', {
+			init: function() {
+				// to user motion sensor, orientation sensor for iOS13
+				this.el.addEventListener('click', function(e) {
+					if (DeviceMotionEvent && DeviceMotionEvent.requestPermission && typeof DeviceMotionEvent.requestPermission === 'function') {
+						DeviceMotionEvent.requestPermission()
+					}
+					if (DeviceOrientationEvent && DeviceOrientationEvent.requestPermission && typeof DeviceOrientationEvent.requestPermission === 'function') {
+						DeviceOrientationEvent.requestPermission();
+					}
+					console.log("requestPermission")
+				})
 			}
+		})
+		function loadJSON(url) {
+			return new Promise(function(resolve, reject) {
+				var request = new XMLHttpRequest()
+				request.open('GET', url)
+				request.onreadystatechange = function() {
+					if (request.readyState === 4) {
+						if (request.status === 200) {
+							resolve(JSON.parse(request.response))
+						} else {
+							reject(Error(request.statusText))
+						}
+					}
+				}
+				request.send()
+			})
 		}
-		request.send()
-	})
-}
-// to user motion sensor, orientation sensor for iOS13
-window.addEventListener("DOMContentLoaded", function() {
-		document.body.addEventListener("click", function() {
-		if (DeviceMotionEvent && DeviceMotionEvent.requestPermission && typeof DeviceMotionEvent.requestPermission === 'function') {
-			DeviceMotionEvent.requestPermission()
-		}
-		if (DeviceOrientationEvent && DeviceOrientationEvent.requestPermission && typeof DeviceOrientationEvent.requestPermission === 'function') {
-			DeviceOrientationEvent.requestPermission();
-		}
-	}, false)
-}, false)
 </script>
 </head>
 <body>
 	<a-scene>
 			<a-sky color="#000000"></a-sky>
-			<a-entity camera look-controls wasd-controls test xrotation="30 90 0" x="0.616 0.866 0">
-			<a-cursor></a-cursor>
-		</a-entity>
+			<a-sphere cursor-listener position="0 1 -5" radius=".5" material="color: blue"></a-sphere>
+			<a-entity camera look-controls x-wasd-controls test xrotation="30 90 0" x="0.616 0.866 0">
+			<!--<a-cursor></a-cursor>-->
+				<a-entity cursor="rayOrigin: mouse" position="0 0 -1" x-geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03" material="color: black; shader: flat"/>
+			</a-entity>
 	</a-scene>
 </body>
+</html>
