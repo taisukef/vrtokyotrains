@@ -72,7 +72,7 @@ AFRAME.registerComponent('trains', {
 		let trains = []
 		const showTrains = async function() {
 			//const url = "http://localhost:8001/api/getTokyoTrainsNow"
-			const url = "http://sabae.cc:8001/api/getTokyoTrainsNow"
+			const url = "https://sabae.cc/api/getTokyoTrainsNow"
 			const data = await loadJSON(url)
 			console.log(data)
 			for (const t of trains) {
