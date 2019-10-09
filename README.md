@@ -1,5 +1,5 @@
 # VR-TokyoTrains
-https://github.io/taisukef/vrtokyotrains/  
+https://taisukef.github.io/vrtokyotrains/  
 
 forked from Mini Tokyo 3D by nagix  
 https://github.com/nagix/mini-tokyo-3d/  
