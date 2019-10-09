@@ -66,15 +66,6 @@ AFRAME.registerComponent('test', {
 			if (!limit)
 				break
 		}
-		// to user motion sensor, orientation sensor for iOS13
-		window.addEventListener("DOMContentLoaded", function() {
-			if (DeviceMotionEvent && DeviceMotionEvent.requestPermission && typeof DeviceMotionEvent.requestPermission === 'function') {
-				DeviceMotionEvent.requestPermission()
-			}
-			if (DeviceOrientationEvent && DeviceOrientationEvent.requestPermission && typeof DeviceOrientationEvent.requestPermission === 'function') {
-				DeviceOrientationEvent.requestPermission();
-			}
-		}, false)
 	},
   tick: function () {
 //		console.log(this.el.object3D.position, this.el.object3D.rotation);
@@ -96,6 +87,15 @@ function loadJSON(url) {
 		request.send()
 	})
 }
+// to user motion sensor, orientation sensor for iOS13
+window.addEventListener("DOMContentLoaded", function() {
+	if (DeviceMotionEvent && DeviceMotionEvent.requestPermission && typeof DeviceMotionEvent.requestPermission === 'function') {
+		DeviceMotionEvent.requestPermission()
+	}
+	if (DeviceOrientationEvent && DeviceOrientationEvent.requestPermission && typeof DeviceOrientationEvent.requestPermission === 'function') {
+		DeviceOrientationEvent.requestPermission();
+	}
+}, false)
 </script>
 </head>
 <body>
