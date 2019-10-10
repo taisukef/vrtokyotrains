@@ -11,10 +11,16 @@ AFRAME.registerComponent('trains', {
 	init: async function() {
 		const scene = document.querySelector('a-scene')
 
+		const ua = navigator.userAgent
+		const oculus = ua.toLowerCase().indexOf("oculus") >= 0
+		if (!oculus) {
+			camera.setAttribute("position", { x: 0, y: 1.7, z: 0 })
+		}
+
 		const tx = function(pos) {
-			const ratio = 20
-			const offx = -139.767698 // tokyo st.
-			const offy = -35.681 + .001
+			const ratio = 50
+			const offx = -139.767698 - 0.01 // tokyo st.
+			const offy = -35.681 - .01
 			const res = [(pos[0] + offx) * ratio, (pos[1] + offy) * ratio]
 			return res
 		}
@@ -23,19 +29,20 @@ AFRAME.registerComponent('trains', {
 		//const geojson = "https://nagix.github.io/mini-tokyo-3d/data/features.json"  // 3534 geojson 路線図 7.4MB
 		const geojson = "features-zoom13.json" // 1.2MB
 		const features = (await loadJSON(geojson)).features
-		console.log(features)
-		const Y = -.2
+		//console.log(features)
+		const Y = 0 // -.2
+		const Y_ST = .05 // -.2
 
 		const zoom = 14 // 13-18
 		let limit = 10000
 		const drawstation = true
 		const drawline = true
-		const addMeshLine = function(pos, col) {
+		const addMeshLine = function(pos, col, y) {
 				// https://github.com/andreasplesch/aframe-meshline-component
 				let s = []
 				for (const p of pos) {
 					const sp = tx(p)
-					s.push(sp[0] + " " + Y + " " + sp[1])
+					s.push(sp[0] + " " + y + " " + sp[1])
 				}
 				let line = document.createElement('a-entity')
 				line.setAttribute('meshline', { path: s.join(','), color: col, lineWidth: 2 })
@@ -52,7 +59,7 @@ AFRAME.registerComponent('trains', {
 				const col = f.properties.color
 //				console.log(f.properties.id)
 				
-				addMeshLine(pos, col)
+				addMeshLine(pos, col, Y)
 				limit--
 			} else if (f.geometry.type == 'Polygon') {
 				if (!drawstation)
@@ -61,7 +68,7 @@ AFRAME.registerComponent('trains', {
 				const col = f.properties.color
 //				console.log(f.properties.id)
 				for (const pos of ppos) {
-					addMeshLine(pos, col)
+					addMeshLine(pos, col, Y_ST)
 				}
 				limit--
 			}
@@ -79,8 +86,8 @@ AFRAME.registerComponent('trains', {
 				scene.removeChild(t)
 			}
 			trains = []
-			const size = 0.024
-			const TY = -.2 + size / 2
+			const size = 0.1
+			const TY = Y_ST + size / 2
 			const stacks = {}
 			for (const d of data) {
 				const p = tx([ d[1], d[0] ])
@@ -146,7 +153,7 @@ function loadJSON(url) {
 	<a-scene>
 			<a-sky color="#000000"></a-sky>
 			<a-sphere cursor-listener position="0 1 -5" radius=".5" material="color: blue"></a-sphere>
-			<a-entity camera look-controls x-wasd-controls trains xrotation="30 90 0" x="0.616 0.866 0">
+			<a-entity id=camera camera look-controls x-wasd-controls trains xrotation="30 90 0" x="0.616 0.866 0">
 				<a-entity cursor="rayOrigin: mouse"/>
 			</a-entity>
 	</a-scene>
