@@ -5,7 +5,7 @@
 <script src="https://aframe.io/releases/0.9.2/aframe.min.js"></script>
 <script src="https://rawgit.com/andreasplesch/aframe-meshline-component/master/dist/aframe-meshline-component.min.js"></script>
 <script>"use strict"
-const SHOWTRAINS_INTERVAL = 5 * 1000
+const SHOWTRAINS_INTERVAL = 30 * 1000
 
 AFRAME.registerComponent('trains', {
 	init: async function() {
@@ -49,7 +49,7 @@ AFRAME.registerComponent('trains', {
 				scene.appendChild(line)
 		}
 		for (const f of features) {
-			console.log(f.properties.id, f.geometry.type, f.properties.zoom)
+			//console.log(f.properties.id, f.geometry.type, f.properties.zoom)
 			if (f.properties.zoom != zoom)
 				continue
 			if (f.geometry.type == 'LineString') {
@@ -81,7 +81,7 @@ AFRAME.registerComponent('trains', {
 			//const url = "http://localhost:8001/api/getTokyoTrainsNow"
 			const url = "https://sabae.cc/api/getTokyoTrainsNow"
 			const data = await loadJSON(url)
-			console.log(data)
+			//console.log(data)
 			for (const t of trains) {
 				scene.removeChild(t)
 			}
@@ -91,6 +91,7 @@ AFRAME.registerComponent('trains', {
 			const stacks = {}
 			for (const d of data) {
 				const p = tx([ d[1], d[0] ])
+				const delay = d[2]
 
 				// stack
 				const name = "" + d[0] + "," + d[1]
@@ -105,7 +106,7 @@ AFRAME.registerComponent('trains', {
 				const train = document.createElement('a-sphere')
 				train.setAttribute('position', p[0] + " " + (TY + nstack * size) + " " + p[1])
 				train.setAttribute('radius', '' + (size / 2))
-				train.setAttribute('color', "green")
+				train.setAttribute('color', delay ? 'red' : "green")
 				scene.appendChild(train)
 				trains.push(train)
 			}
@@ -156,6 +157,6 @@ function loadJSON(url) {
 			<a-entity id=camera camera look-controls x-wasd-controls trains xrotation="30 90 0" x="0.616 0.866 0">
 				<a-entity cursor="rayOrigin: mouse"/>
 			</a-entity>
-	</a-scene>
+		</a-scene>
 </body>
 </html>
